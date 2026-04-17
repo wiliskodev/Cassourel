@@ -2,604 +2,675 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cassourel – Créateur de Carrousels</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Bebas+Neue&family=Dancing+Script:wght@600;700&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Nunito:wght@400;600;800&family=Oswald:wght@400;600&display=swap" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>Cassourel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&family=Dancing+Script:wght@600;700&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:wght@300;600&family=Nunito:wght@400;600;800&family=Oswald:wght@400;600&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
       --bg: #0a0a0a;
-      --surface: #141414;
-      --surface2: #1c1c1c;
-      --border: #262626;
+      --surface: #161616;
+      --surface2: #202020;
+      --border: #2a2a2a;
       --accent: #f5c842;
       --accent2: #e066b0;
       --accent3: #5ee8c2;
       --text: #f0f0f0;
-      --muted: #666;
-      --muted2: #999;
+      --muted: #888;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { height: 100%; }
     body {
       background: var(--bg);
       color: var(--text);
       font-family: 'DM Sans', sans-serif;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      height: 100vh;
       overflow: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    header {
-      padding: 0 32px;
-      height: 58px;
+    /* ═══ HEADER ═══ */
+    .app-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
       flex-shrink: 0;
+      z-index: 100;
     }
-    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.7rem; letter-spacing: 4px; color: var(--accent); }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 3px; color: var(--accent); }
     .logo span { color: var(--accent2); }
-    .header-tag { font-size: 0.7rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
 
-    .app {
-      display: grid;
-      grid-template-columns: 370px 1fr;
+    .btn-generate-top {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; border-radius: 8px;
+      color: #111; font-family: 'DM Sans', sans-serif;
+      font-weight: 700; font-size: 0.8rem;
+      padding: 8px 14px; cursor: pointer;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .btn-generate-top:active { opacity: 0.8; }
+
+    /* ═══ TAB BAR ═══ */
+    .tab-bar {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 10px 8px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn .tab-icon { display: block; font-size: 1rem; margin-bottom: 2px; }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ═══ MAIN CONTENT ═══ */
+    .main-content {
       flex: 1;
       overflow: hidden;
+      position: relative;
     }
 
-    /* LEFT PANEL */
-    .panel {
-      background: var(--surface);
-      border-right: 1px solid var(--border);
+    /* Tab panels */
+    .tab-panel {
+      position: absolute;
+      inset: 0;
       overflow-y: auto;
-      display: flex;
+      padding: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-panel.active { display: flex; }
+    .tab-panel::-webkit-scrollbar { width: 3px; }
+    .tab-panel::-webkit-scrollbar-thumb { background: var(--border); }
+
+    /* Preview panel special */
+    #panel-preview {
+      padding: 0;
       flex-direction: column;
     }
-    .panel::-webkit-scrollbar { width: 3px; }
-    .panel::-webkit-scrollbar-thumb { background: var(--border); }
 
-    .section {
-      border-bottom: 1px solid var(--border);
+    /* ═══ FORM ELEMENTS ═══ */
+    .field-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
     }
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 18px;
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.15s;
-    }
-    .section-header:hover { background: var(--surface2); }
-    .section-label { font-size: 0.67rem; font-weight: 700; letter-spacing: 2px; color: var(--muted2); text-transform: uppercase; }
-    .section-arrow { color: var(--muted); font-size: 0.75rem; transition: transform 0.2s; }
-    .section.collapsed .section-arrow { transform: rotate(-90deg); }
-    .section-body { padding: 0 18px 16px; }
-    .section.collapsed .section-body { display: none; }
 
     textarea {
       width: 100%;
-      height: 150px;
+      height: 180px;
       background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
       color: var(--text);
       font-family: 'DM Sans', sans-serif;
-      font-size: 0.82rem;
-      padding: 11px;
-      resize: vertical;
+      font-size: 0.9rem;
+      padding: 12px;
+      resize: none;
       line-height: 1.6;
-      transition: border 0.2s;
+      -webkit-appearance: none;
     }
     textarea:focus { outline: none; border-color: var(--accent); }
 
-    /* Photo drop */
+    /* Photo upload */
     .photo-drop {
       border: 2px dashed var(--border);
-      border-radius: 10px;
-      padding: 16px;
+      border-radius: 12px;
+      padding: 20px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s;
       position: relative;
       background: var(--surface2);
+      transition: border-color 0.2s;
     }
-    .photo-drop:hover, .photo-drop.dragging { border-color: var(--accent2); background: #1a0d18; }
-    .photo-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
-    .photo-drop p { font-size: 0.78rem; color: var(--muted2); }
+    .photo-drop input { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+    .photo-drop-icon { font-size: 2rem; margin-bottom: 6px; }
+    .photo-drop p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
     .photo-drop strong { color: var(--accent2); }
-    .photo-drop-icon { font-size: 1.8rem; margin-bottom: 6px; }
 
     .photo-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 7px;
-      margin-top: 10px;
+      gap: 8px;
     }
     .photo-thumb-wrap {
       position: relative;
-      border-radius: 7px;
+      border-radius: 10px;
       overflow: hidden;
       border: 2px solid transparent;
       cursor: pointer;
-      transition: all 0.2s;
       aspect-ratio: 1;
+      transition: border-color 0.2s;
     }
-    .photo-thumb-wrap:hover { border-color: var(--accent2); }
     .photo-thumb-wrap.active { border-color: var(--accent); }
     .photo-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .photo-thumb-wrap .del-btn {
-      position: absolute; top: 2px; right: 2px;
-      background: rgba(0,0,0,0.75); color: #fff;
+    .del-btn {
+      position: absolute; top: 3px; right: 3px;
+      background: rgba(0,0,0,0.8); color: #fff;
       border: none; border-radius: 50%;
-      width: 16px; height: 16px; font-size: 0.6rem;
+      width: 18px; height: 18px; font-size: 0.65rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      opacity: 0; transition: opacity 0.15s;
     }
-    .photo-thumb-wrap:hover .del-btn { opacity: 1; }
     .no-photo-btn {
       aspect-ratio: 1;
-      border-radius: 7px;
+      border-radius: 10px;
       border: 2px solid var(--border);
       background: var(--surface2);
       cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      font-size: 0.62rem;
-      color: var(--muted);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 4px; font-size: 0.65rem; color: var(--muted);
       transition: all 0.2s;
     }
-    .no-photo-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .no-photo-btn.active { border-color: var(--accent); color: var(--accent); background: #1a1400; }
+    .no-photo-btn.active { border-color: var(--accent); color: var(--accent); }
+
+    /* Swatches */
+    .swatch-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .swatch {
+      width: 30px; height: 30px; border-radius: 50%;
+      cursor: pointer; border: 2px solid transparent;
+      transition: border 0.15s; flex-shrink: 0;
+    }
+    .swatch.active { border-color: #fff; }
+    .swatch-custom { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border); overflow: hidden; flex-shrink: 0; }
+    .swatch-custom input { width: 200%; height: 200%; margin: -50%; border: none; cursor: pointer; }
 
     /* Sliders */
-    .slider-row {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      margin-top: 10px;
-    }
-    .slider-row label { font-size: 0.72rem; color: var(--muted2); white-space: nowrap; min-width: 70px; }
-    .slider-row input[type=range] { flex: 1; accent-color: var(--accent2); height: 3px; }
-    .slider-row span { font-size: 0.72rem; color: var(--muted2); width: 36px; text-align: right; }
+    .slider-wrap { display: flex; align-items: center; gap: 10px; }
+    .slider-wrap input[type=range] { flex: 1; accent-color: var(--accent2); height: 4px; cursor: pointer; }
+    .slider-val { font-size: 0.75rem; color: var(--muted); min-width: 38px; text-align: right; }
 
-    /* Overlay colors */
-    .ov-colors { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
-    .ov-swatch {
-      width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
-      border: 2px solid transparent; transition: border 0.15s; flex-shrink: 0;
-    }
-    .ov-swatch.active { border-color: #fff; }
-    .ov-swatch-custom {
-      width: 26px; height: 26px; border-radius: 50%;
-      border: 2px solid var(--border); overflow: hidden; cursor: pointer; flex-shrink: 0;
-    }
-    .ov-swatch-custom input { width: 200%; height: 200%; margin: -50%; border: none; cursor: pointer; }
+    /* Grid buttons (3x3 positions, layouts, designs) */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 
-    /* Position grids */
-    .pos-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 5px;
-    }
-    .pos-btn {
+    .grid-btn {
       background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      color: var(--muted2);
-      font-size: 0.7rem;
-      padding: 6px 3px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      padding: 10px 6px;
       cursor: pointer;
       text-align: center;
       transition: all 0.15s;
+      -webkit-appearance: none;
     }
-    .pos-btn:hover { border-color: var(--accent3); color: var(--accent3); }
-    .pos-btn.active { border-color: var(--accent3); color: var(--accent3); background: #081a14; }
+    .grid-btn:active { opacity: 0.7; }
+    .grid-btn.active-accent { border-color: var(--accent); color: var(--accent); background: #1c1600; }
+    .grid-btn.active-accent2 { border-color: var(--accent2); color: var(--accent2); background: #1a0d18; }
+    .grid-btn.active-accent3 { border-color: var(--accent3); color: var(--accent3); background: #081a14; }
+    .grid-btn .btn-icon { display: block; font-size: 1.2rem; margin-bottom: 3px; }
 
-    /* Layout */
-    .layout-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 7px;
-    }
-    .layout-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      cursor: pointer;
-      padding: 9px 5px;
-      text-align: center;
-      transition: all 0.15s;
-    }
-    .layout-btn:hover { border-color: var(--accent); }
-    .layout-btn.active { border-color: var(--accent); background: #1a1400; }
-    .layout-rect {
-      margin: 0 auto 5px;
-      background: var(--border);
-      border-radius: 2px;
-    }
-    .layout-label { font-size: 0.64rem; color: var(--muted2); display: block; }
-    .layout-sub { font-size: 0.58rem; color: var(--muted); display: block; }
+    .layout-rect { margin: 0 auto 5px; background: var(--border); border-radius: 2px; }
+    .layout-sub { font-size: 0.6rem; color: var(--muted); display: block; margin-top: 1px; }
 
-    /* Design */
-    .design-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 7px;
-    }
-    .design-thumb {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 8px 4px;
-      cursor: pointer;
-      text-align: center;
-      font-size: 0.65rem;
-      color: var(--muted2);
-      transition: all 0.15s;
-    }
-    .design-thumb:hover { border-color: var(--accent2); color: var(--accent2); }
-    .design-thumb.active { border-color: var(--accent2); color: var(--accent2); background: #1a0d18; }
-    .design-thumb .icon { font-size: 1.1rem; display: block; margin-bottom: 3px; }
-
-    /* Selects & colors */
+    /* Select */
     select {
       width: 100%;
       background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 9px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
       color: var(--text);
       font-family: 'DM Sans', sans-serif;
-      font-size: 0.82rem;
-      padding: 8px 11px;
+      font-size: 0.88rem;
+      padding: 11px 12px;
       cursor: pointer;
+      -webkit-appearance: none;
       appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23666' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23888' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 10px center;
+      background-position: right 12px center;
     }
     select:focus { outline: none; border-color: var(--accent); }
 
+    /* Color inputs */
     .color-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .color-group label { display: block; font-size: 0.7rem; color: var(--muted2); margin-bottom: 5px; }
+    .color-group label { display: block; font-size: 0.72rem; color: var(--muted); margin-bottom: 6px; }
     .color-group input[type=color] {
-      width: 100%; height: 38px;
-      border: 1px solid var(--border); border-radius: 8px;
-      background: var(--surface2); cursor: pointer; padding: 3px;
+      width: 100%; height: 44px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      background: var(--surface2); cursor: pointer; padding: 4px;
+      -webkit-appearance: none;
     }
 
-    .range-row { display: flex; align-items: center; gap: 9px; }
-    .range-row input[type=range] { flex: 1; accent-color: var(--accent); }
-    .range-row span { font-size: 0.72rem; color: var(--muted2); width: 32px; text-align: right; }
-
-    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 9px; }
-    .toggle-row label { font-size: 0.73rem; color: var(--muted2); }
-    .toggle { position: relative; width: 34px; height: 19px; flex-shrink: 0; }
+    /* Toggle */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+    .toggle-row span { font-size: 0.82rem; color: var(--muted); }
+    .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
     .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 20px; cursor: pointer; transition: background 0.2s; }
-    .toggle-slider::before { content: ''; position: absolute; width: 13px; height: 13px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 22px; cursor: pointer; transition: background 0.2s; }
+    .toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; }
     .toggle input:checked + .toggle-slider { background: var(--accent); }
-    .toggle input:checked + .toggle-slider::before { transform: translateX(15px); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
 
-    .btn-generate {
-      margin: 14px 18px;
-      padding: 13px;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-      border: none;
-      border-radius: 11px;
-      color: #111;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1rem;
-      letter-spacing: 2px;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-      flex-shrink: 0;
+    /* Card wrapper */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .btn-generate:hover { opacity: 0.88; transform: translateY(-1px); }
 
-    /* RIGHT */
-    .preview-panel { display: flex; flex-direction: column; background: #0d0d0d; overflow: hidden; }
-
+    /* ═══ PREVIEW PANEL ═══ */
     .preview-toolbar {
-      padding: 9px 18px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 8px;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
       flex-shrink: 0;
-      flex-wrap: wrap;
     }
-    .slide-counter { font-size: 0.76rem; color: var(--muted2); white-space: nowrap; }
-    .nav-btns { display: flex; gap: 5px; }
+    .slide-counter { font-size: 0.78rem; color: var(--muted); }
+    .nav-btns { display: flex; gap: 6px; }
     .nav-btn {
-      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-      border-radius: 7px; padding: 5px 11px; cursor: pointer; font-size: 0.78rem; transition: all 0.15s;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px;
+      padding: 7px 14px; cursor: pointer;
+      font-size: 0.8rem; transition: all 0.15s;
+      -webkit-appearance: none;
     }
-    .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
-    .toolbar-spacer { flex: 1; }
-    .btn-dl {
-      border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
-      font-weight: 600; font-size: 0.78rem; padding: 6px 13px;
-      cursor: pointer; transition: opacity 0.2s; white-space: nowrap;
-    }
-    .btn-dl-one { background: var(--accent); color: #111; }
-    .btn-dl-all { background: var(--accent2); color: #111; }
-    .btn-dl:hover { opacity: 0.85; }
+    .nav-btn:disabled { opacity: 0.25; }
+    .spacer { flex: 1; }
 
     .preview-area {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 16px;
       overflow: hidden;
-      background: repeating-conic-gradient(#141414 0% 25%, #0f0f0f 0% 50%) 0 0 / 18px 18px;
+      background: repeating-conic-gradient(#141414 0% 25%, #101010 0% 50%) 0 0 / 16px 16px;
     }
-
-    #slide-container { box-shadow: 0 20px 70px rgba(0,0,0,0.8); border-radius: 10px; overflow: hidden; }
+    #slide-container { border-radius: 10px; overflow: hidden; box-shadow: 0 16px 60px rgba(0,0,0,0.8); }
 
     .thumb-strip {
-      display: flex; gap: 7px; padding: 9px 14px;
+      display: flex; gap: 7px; padding: 8px 12px;
       overflow-x: auto; border-top: 1px solid var(--border);
-      background: var(--surface); flex-shrink: 0; height: 66px; align-items: center;
+      background: var(--surface); flex-shrink: 0;
+      height: 60px; align-items: center;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
-    .thumb-strip::-webkit-scrollbar { height: 3px; }
-    .thumb-strip::-webkit-scrollbar-thumb { background: var(--border); }
+    .thumb-strip::-webkit-scrollbar { display: none; }
     .thumb-item {
-      flex: 0 0 48px; height: 48px; border-radius: 6px;
+      flex: 0 0 44px; height: 44px; border-radius: 6px;
       border: 2px solid var(--border); cursor: pointer; overflow: hidden;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.6rem; color: var(--muted); transition: border-color 0.15s;
+      font-size: 0.62rem; color: var(--muted);
       background-size: cover; background-position: center; position: relative;
+      transition: border-color 0.15s;
     }
-    .thumb-item:hover { border-color: var(--accent2); }
     .thumb-item.active { border-color: var(--accent); }
-    .thumb-label { position: relative; z-index: 1; background: rgba(0,0,0,0.6); border-radius: 3px; padding: 1px 4px; }
+    .thumb-label { background: rgba(0,0,0,0.65); border-radius: 3px; padding: 1px 4px; position: relative; z-index: 1; }
 
-    .empty-state { text-align: center; color: var(--muted); }
-    .empty-state .big { font-size: 2.8rem; margin-bottom: 10px; }
-    .empty-state p { font-size: 0.83rem; line-height: 1.7; }
+    /* Download buttons */
+    .dl-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 14px; flex-shrink: 0; }
+    .dl-btn {
+      border: none; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-weight: 700;
+      font-size: 0.82rem; padding: 11px 8px;
+      cursor: pointer; transition: opacity 0.2s;
+      -webkit-appearance: none;
+    }
+    .dl-btn:active { opacity: 0.8; }
+    .dl-btn-one { background: var(--accent); color: #111; }
+    .dl-btn-all { background: var(--accent2); color: #111; }
+
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100%; text-align: center;
+      color: var(--muted); padding: 24px;
+    }
+    .empty-state .big { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.85rem; line-height: 1.7; }
     .empty-state strong { color: var(--accent); }
 
-    .sub-label { font-size: 0.68rem; color: var(--muted2); margin: 12px 0 7px; font-weight: 600; letter-spacing: 0.5px; }
+    /* Divider */
+    .divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+    /* Bottom safe area */
+    .bottom-safe { height: var(--safe-bottom); flex-shrink: 0; }
+
+    /* ═══ DESKTOP OVERRIDE ═══ */
+    @media (min-width: 768px) {
+      body { overflow: hidden; }
+      .tab-bar { display: none; }
+      .main-content { display: grid; grid-template-columns: 360px 1fr; }
+      .tab-panel { display: none !important; }
+      #panel-settings {
+        display: flex !important;
+        position: static;
+        border-right: 1px solid var(--border);
+        height: 100%;
+      }
+      #panel-preview {
+        display: flex !important;
+        position: static;
+        height: 100%;
+      }
+      .btn-generate-top { display: none; }
+      .desktop-generate {
+        display: block !important;
+        margin: 0 16px 16px;
+        padding: 13px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border: none; border-radius: 12px;
+        color: #111; font-family: 'Bebas Neue', sans-serif;
+        font-size: 1rem; letter-spacing: 2px;
+        cursor: pointer; width: calc(100% - 32px);
+        flex-shrink: 0;
+      }
+    }
+    .desktop-generate { display: none; }
+
+    @media (max-width: 767px) {
+      #panel-preview { display: none; }
+      #panel-preview.active { display: flex; }
+    }
   </style>
 </head>
 <body>
 
-<header>
+<!-- HEADER -->
+<div class="app-header">
   <div class="logo">Casso<span>urel</span></div>
-  <div class="header-tag">✦ Créateur de Carrousels Visuels</div>
-</header>
+  <button class="btn-generate-top" onclick="generateSlides()">✦ Générer</button>
+</div>
 
-<div class="app">
-  <!-- ═══════ LEFT PANEL ═══════ -->
-  <div class="panel">
+<!-- TAB BAR (mobile only) -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('settings', this)">
+    <span class="tab-icon">✍️</span>Texte
+  </button>
+  <button class="tab-btn" onclick="showTab('photo', this)">
+    <span class="tab-icon">🖼️</span>Photo
+  </button>
+  <button class="tab-btn" onclick="showTab('format', this)">
+    <span class="tab-icon">📐</span>Format
+  </button>
+  <button class="tab-btn" onclick="showTab('design', this)">
+    <span class="tab-icon">🎨</span>Design
+  </button>
+  <button class="tab-btn" onclick="showTab('preview', this)">
+    <span class="tab-icon">👁️</span>Aperçu
+  </button>
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+  <!-- ══ SETTINGS PANEL (desktop left col) ══ -->
+  <div class="tab-panel active" id="panel-settings">
 
     <!-- TEXTE -->
-    <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-label">📝 Texte</div>
-        <span class="section-arrow">▾</span>
-      </div>
-      <div class="section-body">
-        <textarea id="input-text" placeholder="Colle ton texte ici...&#10;&#10;Chaque ligne commençant par 1. 2. 3... devient une nouvelle slide.&#10;Le reste (titre, intro, CTA) = slide spéciale."></textarea>
-      </div>
+    <div class="card">
+      <div class="field-label">📝 Ton texte</div>
+      <textarea id="input-text" placeholder="Colle ton texte ici...&#10;&#10;Titre de ta pub 🌸&#10;&#10;1. Premier conseil 🥺&#10;Description du conseil...&#10;&#10;2. Deuxième conseil 💕&#10;Description...&#10;&#10;Abonne-toi pour plus !"></textarea>
     </div>
 
-    <!-- PHOTO -->
-    <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-label">🖼️ Photo arrière-plan</div>
-        <span class="section-arrow">▾</span>
-      </div>
-      <div class="section-body">
-        <div class="photo-drop" id="photo-drop">
-          <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotoUpload(event)"/>
-          <div class="photo-drop-icon">📸</div>
-          <p><strong>Clique ou glisse</strong> tes photos ici</p>
-        </div>
-        <div class="photo-grid" id="photo-grid">
-          <div class="no-photo-btn active" id="no-photo-btn" onclick="selectNoPhoto()">
-            <span style="font-size:1.1rem">🚫</span>
-            <span>Sans photo</span>
-          </div>
-        </div>
-
-        <div class="sub-label">Calque de couleur</div>
-        <div class="ov-colors" id="ov-colors">
-          <div class="ov-swatch active" style="background:#000" data-color="#000000" onclick="setOvColor(this)"></div>
-          <div class="ov-swatch" style="background:#1a0a2e" data-color="#1a0a2e" onclick="setOvColor(this)"></div>
-          <div class="ov-swatch" style="background:#0a1a10" data-color="#0a1a10" onclick="setOvColor(this)"></div>
-          <div class="ov-swatch" style="background:#1a0a0a" data-color="#1a0a0a" onclick="setOvColor(this)"></div>
-          <div class="ov-swatch" style="background:#fff" data-color="#ffffff" onclick="setOvColor(this)"></div>
-          <div class="ov-swatch" style="background:#f5c842" data-color="#f5c842" onclick="setOvColor(this)"></div>
-          <div class="ov-swatch" style="background:#e066b0" data-color="#e066b0" onclick="setOvColor(this)"></div>
-          <div class="ov-swatch" style="background:#5ee8c2" data-color="#5ee8c2" onclick="setOvColor(this)"></div>
-          <div class="ov-swatch-custom" title="Couleur perso">
-            <input type="color" id="ov-custom" value="#000000" oninput="setOvColorCustom(this)"/>
-          </div>
-        </div>
-
-        <div class="slider-row">
-          <label>Opacité</label>
-          <input type="range" id="ov-opacity" min="0" max="95" value="55" oninput="document.getElementById('ov-opacity-val').textContent=this.value+'%';liveUpdate()"/>
-          <span id="ov-opacity-val">55%</span>
-        </div>
-        <div class="slider-row">
-          <label>Flou photo</label>
-          <input type="range" id="photo-blur" min="0" max="20" value="0" oninput="document.getElementById('blur-val').textContent=this.value+'px';liveUpdate()"/>
-          <span id="blur-val">0px</span>
-        </div>
-
-        <div class="sub-label">Position photo</div>
-        <div class="pos-grid" id="bg-pos-grid">
-          <div class="pos-btn" data-p="top left" onclick="setBgPos(this)">↖</div>
-          <div class="pos-btn" data-p="top center" onclick="setBgPos(this)">↑</div>
-          <div class="pos-btn" data-p="top right" onclick="setBgPos(this)">↗</div>
-          <div class="pos-btn" data-p="center left" onclick="setBgPos(this)">←</div>
-          <div class="pos-btn active" data-p="center center" onclick="setBgPos(this)">✦</div>
-          <div class="pos-btn" data-p="center right" onclick="setBgPos(this)">→</div>
-          <div class="pos-btn" data-p="bottom left" onclick="setBgPos(this)">↙</div>
-          <div class="pos-btn" data-p="bottom center" onclick="setBgPos(this)">↓</div>
-          <div class="pos-btn" data-p="bottom right" onclick="setBgPos(this)">↘</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- FORMAT -->
-    <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-label">📐 Format</div>
-        <span class="section-arrow">▾</span>
-      </div>
-      <div class="section-body">
-        <div class="layout-grid">
-          <div class="layout-btn active" data-w="1080" data-h="1080" onclick="setSize(this)">
-            <div class="layout-rect" style="width:34px;height:34px;"></div>
-            <span class="layout-label">Carré</span><span class="layout-sub">1:1</span>
-          </div>
-          <div class="layout-btn" data-w="1080" data-h="1350" onclick="setSize(this)">
-            <div class="layout-rect" style="width:27px;height:34px;"></div>
-            <span class="layout-label">Portrait</span><span class="layout-sub">4:5</span>
-          </div>
-          <div class="layout-btn" data-w="1080" data-h="1920" onclick="setSize(this)">
-            <div class="layout-rect" style="width:19px;height:34px;"></div>
-            <span class="layout-label">Stories</span><span class="layout-sub">9:16</span>
-          </div>
-          <div class="layout-btn" data-w="1080" data-h="566" onclick="setSize(this)">
-            <div class="layout-rect" style="width:42px;height:22px;"></div>
-            <span class="layout-label">Paysage</span><span class="layout-sub">1.91:1</span>
-          </div>
-          <div class="layout-btn" data-w="1280" data-h="720" onclick="setSize(this)">
-            <div class="layout-rect" style="width:42px;height:24px;"></div>
-            <span class="layout-label">YouTube</span><span class="layout-sub">16:9</span>
-          </div>
-          <div class="layout-btn" data-w="1200" data-h="628" onclick="setSize(this)">
-            <div class="layout-rect" style="width:42px;height:22px;"></div>
-            <span class="layout-label">LinkedIn</span><span class="layout-sub">1.91:1</span>
-          </div>
-        </div>
-
-        <div class="sub-label">Position du texte</div>
-        <div class="pos-grid" id="txt-pos-grid">
-          <div class="pos-btn" data-jc="flex-start" data-ta="left" onclick="setTxtPos(this)">↖</div>
-          <div class="pos-btn" data-jc="flex-start" data-ta="center" onclick="setTxtPos(this)">↑</div>
-          <div class="pos-btn" data-jc="flex-start" data-ta="right" onclick="setTxtPos(this)">↗</div>
-          <div class="pos-btn" data-jc="center" data-ta="left" onclick="setTxtPos(this)">←</div>
-          <div class="pos-btn active" data-jc="center" data-ta="center" onclick="setTxtPos(this)">✦</div>
-          <div class="pos-btn" data-jc="center" data-ta="right" onclick="setTxtPos(this)">→</div>
-          <div class="pos-btn" data-jc="flex-end" data-ta="left" onclick="setTxtPos(this)">↙</div>
-          <div class="pos-btn" data-jc="flex-end" data-ta="center" onclick="setTxtPos(this)">↓</div>
-          <div class="pos-btn" data-jc="flex-end" data-ta="right" onclick="setTxtPos(this)">↘</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- DESIGN -->
-    <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-label">🎨 Design</div>
-        <span class="section-arrow">▾</span>
-      </div>
-      <div class="section-body">
-        <div class="design-grid">
-          <div class="design-thumb active" data-d="clean"><span class="icon">○</span>Clean</div>
-          <div class="design-thumb" data-d="frame"><span class="icon">⬜</span>Cadre</div>
-          <div class="design-thumb" data-d="bold"><span class="icon">◼</span>Bold</div>
-          <div class="design-thumb" data-d="floral"><span class="icon">🌸</span>Floral</div>
-          <div class="design-thumb" data-d="dots"><span class="icon">·</span>Points</div>
-          <div class="design-thumb" data-d="lines"><span class="icon">≡</span>Lignes</div>
-          <div class="design-thumb" data-d="diagonal"><span class="icon">◤</span>Diagonal</div>
-          <div class="design-thumb" data-d="circle"><span class="icon">◯</span>Cercle</div>
-          <div class="design-thumb" data-d="split"><span class="icon">▧</span>Split</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TYPO -->
-    <div class="section">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-label">🔤 Typo & Couleurs</div>
-        <span class="section-arrow">▾</span>
-      </div>
-      <div class="section-body">
-        <div style="margin-bottom:10px;">
-          <select id="font-select" onchange="liveUpdate()">
-            <option value="'Playfair Display', serif">Playfair Display – Élégant</option>
-            <option value="'Dancing Script', cursive">Dancing Script – Manuscrit</option>
-            <option value="'Bebas Neue', sans-serif">Bebas Neue – Impact</option>
-            <option value="'Cormorant Garamond', serif">Cormorant Garamond – Raffiné</option>
-            <option value="'Nunito', sans-serif">Nunito – Doux & Rond</option>
-            <option value="'Oswald', sans-serif">Oswald – Fort</option>
-            <option value="'Space Mono', monospace">Space Mono – Tech</option>
-            <option value="'DM Sans', sans-serif">DM Sans – Moderne</option>
-          </select>
-        </div>
-        <div class="color-row" style="margin-bottom:10px;">
-          <div class="color-group">
-            <label>Fond (sans photo)</label>
-            <input type="color" id="bg-color" value="#1a0a2e" oninput="liveUpdate()"/>
-          </div>
-          <div class="color-group">
-            <label>Couleur texte</label>
-            <input type="color" id="text-color" value="#ffffff" oninput="liveUpdate()"/>
-          </div>
-        </div>
-        <div class="sub-label">Taille texte</div>
-        <div class="range-row" style="margin-bottom:8px;">
-          <input type="range" id="font-size" min="14" max="40" value="22" oninput="document.getElementById('fs-val').textContent=this.value+'px';liveUpdate()"/>
-          <span id="fs-val">22px</span>
-        </div>
-        <div class="toggle-row">
-          <label>Ombre sur le texte</label>
-          <label class="toggle"><input type="checkbox" id="text-shadow" checked onchange="liveUpdate()"/><span class="toggle-slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <label>Fond semi-transparent</label>
-          <label class="toggle"><input type="checkbox" id="text-bg" onchange="liveUpdate()"/><span class="toggle-slider"></span></label>
-        </div>
-      </div>
-    </div>
-
-    <button class="btn-generate" onclick="generateSlides()">✦ GÉNÉRER LES SLIDES</button>
-    <div style="height:16px;flex-shrink:0;"></div>
+    <button class="desktop-generate" onclick="generateSlides()">✦ GÉNÉRER LES SLIDES</button>
+    <div class="bottom-safe"></div>
   </div>
 
-  <!-- ═══════ RIGHT PANEL ═══════ -->
-  <div class="preview-panel">
+  <!-- ══ PHOTO TAB ══ -->
+  <div class="tab-panel" id="panel-photo">
+
+    <!-- Upload -->
+    <div class="card">
+      <div class="field-label">📸 Ajouter des photos</div>
+      <div class="photo-drop" id="photo-drop">
+        <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotoUpload(event)"/>
+        <div class="photo-drop-icon">📸</div>
+        <p><strong>Appuie ici</strong> pour choisir tes photos<br/><span style="font-size:0.75rem">Plusieurs photos acceptées</span></p>
+      </div>
+      <div class="photo-grid" id="photo-grid">
+        <div class="no-photo-btn active" onclick="selectNoPhoto()">
+          <span style="font-size:1.2rem">🚫</span>
+          <span>Sans photo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="card">
+      <div class="field-label">🎨 Calque de couleur</div>
+      <div class="swatch-row" id="ov-swatches">
+        <div class="swatch active" style="background:#000" data-c="#000000" onclick="setOvColor(this)"></div>
+        <div class="swatch" style="background:#1a0a2e" data-c="#1a0a2e" onclick="setOvColor(this)"></div>
+        <div class="swatch" style="background:#0a1a10" data-c="#0a1a10" onclick="setOvColor(this)"></div>
+        <div class="swatch" style="background:#1a0808" data-c="#1a0808" onclick="setOvColor(this)"></div>
+        <div class="swatch" style="background:#fff" data-c="#ffffff" onclick="setOvColor(this)"></div>
+        <div class="swatch" style="background:#f5c842" data-c="#f5c842" onclick="setOvColor(this)"></div>
+        <div class="swatch" style="background:#e066b0" data-c="#e066b0" onclick="setOvColor(this)"></div>
+        <div class="swatch-custom"><input type="color" id="ov-custom" value="#000000" oninput="setOvColorCustom(this)"/></div>
+      </div>
+      <div class="slider-wrap">
+        <span style="font-size:0.75rem;color:var(--muted);min-width:58px;">Opacité</span>
+        <input type="range" id="ov-opacity" min="0" max="95" value="55" oninput="document.getElementById('ov-op-val').textContent=this.value+'%';liveUpdate()"/>
+        <span class="slider-val" id="ov-op-val">55%</span>
+      </div>
+      <div class="slider-wrap">
+        <span style="font-size:0.75rem;color:var(--muted);min-width:58px;">Flou</span>
+        <input type="range" id="photo-blur" min="0" max="20" value="0" oninput="document.getElementById('blur-val').textContent=this.value+'px';liveUpdate()"/>
+        <span class="slider-val" id="blur-val">0px</span>
+      </div>
+    </div>
+
+    <!-- Photo position -->
+    <div class="card">
+      <div class="field-label">📍 Position de la photo</div>
+      <div class="grid-3" id="bg-pos-grid">
+        <button class="grid-btn" data-p="top left" onclick="setBgPos(this)">↖ Haut G</button>
+        <button class="grid-btn" data-p="top center" onclick="setBgPos(this)">↑ Haut</button>
+        <button class="grid-btn" data-p="top right" onclick="setBgPos(this)">↗ Haut D</button>
+        <button class="grid-btn" data-p="center left" onclick="setBgPos(this)">← Gauche</button>
+        <button class="grid-btn active-accent3" data-p="center center" onclick="setBgPos(this)">✦ Centre</button>
+        <button class="grid-btn" data-p="center right" onclick="setBgPos(this)">→ Droite</button>
+        <button class="grid-btn" data-p="bottom left" onclick="setBgPos(this)">↙ Bas G</button>
+        <button class="grid-btn" data-p="bottom center" onclick="setBgPos(this)">↓ Bas</button>
+        <button class="grid-btn" data-p="bottom right" onclick="setBgPos(this)">↘ Bas D</button>
+      </div>
+    </div>
+
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ══ FORMAT TAB ══ -->
+  <div class="tab-panel" id="panel-format">
+
+    <!-- Taille -->
+    <div class="card">
+      <div class="field-label">📐 Format de l'image</div>
+      <div class="grid-3">
+        <button class="grid-btn active-accent" data-w="1080" data-h="1080" onclick="setSize(this)">
+          <div class="layout-rect" style="width:34px;height:34px;"></div>
+          Carré<span class="layout-sub">1:1</span>
+        </button>
+        <button class="grid-btn" data-w="1080" data-h="1350" onclick="setSize(this)">
+          <div class="layout-rect" style="width:27px;height:34px;"></div>
+          Portrait<span class="layout-sub">4:5</span>
+        </button>
+        <button class="grid-btn" data-w="1080" data-h="1920" onclick="setSize(this)">
+          <div class="layout-rect" style="width:19px;height:34px;"></div>
+          Stories<span class="layout-sub">9:16</span>
+        </button>
+        <button class="grid-btn" data-w="1080" data-h="566" onclick="setSize(this)">
+          <div class="layout-rect" style="width:42px;height:22px;"></div>
+          Paysage<span class="layout-sub">1.91:1</span>
+        </button>
+        <button class="grid-btn" data-w="1280" data-h="720" onclick="setSize(this)">
+          <div class="layout-rect" style="width:42px;height:24px;"></div>
+          YouTube<span class="layout-sub">16:9</span>
+        </button>
+        <button class="grid-btn" data-w="1200" data-h="628" onclick="setSize(this)">
+          <div class="layout-rect" style="width:42px;height:22px;"></div>
+          LinkedIn<span class="layout-sub">1.91:1</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Position texte -->
+    <div class="card">
+      <div class="field-label">📍 Position du texte</div>
+      <div class="grid-3" id="txt-pos-grid">
+        <button class="grid-btn" data-jc="flex-start" data-ta="left" onclick="setTxtPos(this)">↖</button>
+        <button class="grid-btn" data-jc="flex-start" data-ta="center" onclick="setTxtPos(this)">↑</button>
+        <button class="grid-btn" data-jc="flex-start" data-ta="right" onclick="setTxtPos(this)">↗</button>
+        <button class="grid-btn" data-jc="center" data-ta="left" onclick="setTxtPos(this)">←</button>
+        <button class="grid-btn active-accent3" data-jc="center" data-ta="center" onclick="setTxtPos(this)">✦ Centre</button>
+        <button class="grid-btn" data-jc="center" data-ta="right" onclick="setTxtPos(this)">→</button>
+        <button class="grid-btn" data-jc="flex-end" data-ta="left" onclick="setTxtPos(this)">↙</button>
+        <button class="grid-btn" data-jc="flex-end" data-ta="center" onclick="setTxtPos(this)">↓</button>
+        <button class="grid-btn" data-jc="flex-end" data-ta="right" onclick="setTxtPos(this)">↘</button>
+      </div>
+    </div>
+
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ══ DESIGN TAB ══ -->
+  <div class="tab-panel" id="panel-design">
+
+    <!-- Design style -->
+    <div class="card">
+      <div class="field-label">🎨 Style</div>
+      <div class="grid-3">
+        <button class="grid-btn active-accent2" data-d="clean" onclick="setDesign(this)"><span class="btn-icon">○</span>Clean</button>
+        <button class="grid-btn" data-d="frame" onclick="setDesign(this)"><span class="btn-icon">⬜</span>Cadre</button>
+        <button class="grid-btn" data-d="bold" onclick="setDesign(this)"><span class="btn-icon">◼</span>Bold</button>
+        <button class="grid-btn" data-d="floral" onclick="setDesign(this)"><span class="btn-icon">🌸</span>Floral</button>
+        <button class="grid-btn" data-d="dots" onclick="setDesign(this)"><span class="btn-icon">·</span>Points</button>
+        <button class="grid-btn" data-d="lines" onclick="setDesign(this)"><span class="btn-icon">≡</span>Lignes</button>
+        <button class="grid-btn" data-d="diagonal" onclick="setDesign(this)"><span class="btn-icon">◤</span>Diagonal</button>
+        <button class="grid-btn" data-d="circle" onclick="setDesign(this)"><span class="btn-icon">◯</span>Cercle</button>
+        <button class="grid-btn" data-d="split" onclick="setDesign(this)"><span class="btn-icon">▧</span>Split</button>
+      </div>
+    </div>
+
+    <!-- Police -->
+    <div class="card">
+      <div class="field-label">🔤 Police</div>
+      <select id="font-select" onchange="liveUpdate()">
+        <option value="'Playfair Display', serif">Playfair Display – Élégant</option>
+        <option value="'Dancing Script', cursive">Dancing Script – Manuscrit</option>
+        <option value="'Bebas Neue', sans-serif">Bebas Neue – Impact</option>
+        <option value="'Cormorant Garamond', serif">Cormorant Garamond – Raffiné</option>
+        <option value="'Nunito', sans-serif">Nunito – Doux & Rond</option>
+        <option value="'Oswald', sans-serif">Oswald – Fort</option>
+        <option value="'Space Mono', monospace">Space Mono – Tech</option>
+        <option value="'DM Sans', sans-serif">DM Sans – Moderne</option>
+      </select>
+    </div>
+
+    <!-- Couleurs -->
+    <div class="card">
+      <div class="field-label">🖌️ Couleurs</div>
+      <div class="color-row">
+        <div class="color-group">
+          <label>Fond (sans photo)</label>
+          <input type="color" id="bg-color" value="#1a0a2e" oninput="liveUpdate()"/>
+        </div>
+        <div class="color-group">
+          <label>Couleur texte</label>
+          <input type="color" id="text-color" value="#ffffff" oninput="liveUpdate()"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Taille texte & options -->
+    <div class="card">
+      <div class="field-label">⚙️ Options texte</div>
+      <div class="slider-wrap">
+        <span style="font-size:0.75rem;color:var(--muted);min-width:68px;">Taille</span>
+        <input type="range" id="font-size" min="14" max="44" value="22"
+          oninput="document.getElementById('fs-val').textContent=this.value+'px';liveUpdate()"/>
+        <span class="slider-val" id="fs-val">22px</span>
+      </div>
+      <div class="divider"></div>
+      <div class="toggle-row">
+        <span>Ombre sur le texte</span>
+        <label class="toggle"><input type="checkbox" id="text-shadow" checked onchange="liveUpdate()"/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span>Fond semi-transparent</span>
+        <label class="toggle"><input type="checkbox" id="text-bg" onchange="liveUpdate()"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ══ PREVIEW PANEL ══ -->
+  <div class="tab-panel" id="panel-preview">
     <div class="preview-toolbar">
       <span class="slide-counter" id="slide-counter">— / —</span>
       <div class="nav-btns">
-        <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Préc</button>
-        <button class="nav-btn" id="btn-next" onclick="navigate(1)" disabled>Suiv →</button>
+        <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>←</button>
+        <button class="nav-btn" id="btn-next" onclick="navigate(1)" disabled>→</button>
       </div>
-      <span class="toolbar-spacer"></span>
-      <button class="btn-dl btn-dl-one" onclick="downloadCurrent()">⬇ Cette slide</button>
-      <button class="btn-dl btn-dl-all" onclick="downloadAll()">⬇ Toutes</button>
+      <span class="spacer"></span>
     </div>
 
     <div class="preview-area" id="preview-area">
       <div class="empty-state">
         <div class="big">✦</div>
-        <p>Colle ton texte, ajoute une <strong>photo</strong>,<br/>choisis ton design et clique sur <strong>Générer</strong></p>
+        <p>Configure ton texte, ta photo<br/>et clique sur <strong>Générer</strong> !</p>
       </div>
     </div>
 
     <div class="thumb-strip" id="thumb-strip"></div>
+
+    <div class="dl-btns">
+      <button class="dl-btn dl-btn-one" onclick="downloadCurrent()">⬇ Cette slide</button>
+      <button class="dl-btn dl-btn-all" onclick="downloadAll()">⬇ Toutes</button>
+    </div>
+
+    <div class="bottom-safe"></div>
   </div>
-</div>
+
+</div><!-- end main-content -->
 
 <script>
+  // ═══ STATE ═══
   let slides = [], currentIndex = 0;
   let currentDesign = 'clean';
   let currentW = 1080, currentH = 1080;
@@ -608,23 +679,26 @@
   let ovColor = '#000000';
   let photos = [], selPhoto = -1;
 
-  function toggleSection(hdr) {
-    hdr.closest('.section').classList.toggle('collapsed');
+  // ═══ TABS ═══
+  function showTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    btn.classList.add('active');
   }
 
-  // ── PHOTOS ──
+  // ═══ PHOTOS ═══
   function handlePhotoUpload(e) {
-    Array.from(e.target.files).forEach(f => photos.push({ url: URL.createObjectURL(f), name: f.name }));
+    Array.from(e.target.files).forEach(f => photos.push({ url: URL.createObjectURL(f) }));
     if (selPhoto === -1 && photos.length) selPhoto = 0;
-    rebuildGrid(); liveUpdate();
-    e.target.value = '';
+    rebuildGrid(); liveUpdate(); e.target.value = '';
   }
-  const drop = document.getElementById('photo-drop');
-  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragging'); });
-  drop.addEventListener('dragleave', () => drop.classList.remove('dragging'));
-  drop.addEventListener('drop', e => {
-    e.preventDefault(); drop.classList.remove('dragging');
-    Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')).forEach(f => photos.push({ url: URL.createObjectURL(f), name: f.name }));
+
+  const dropEl = document.getElementById('photo-drop');
+  dropEl.addEventListener('dragover', e => { e.preventDefault(); });
+  dropEl.addEventListener('drop', e => {
+    e.preventDefault();
+    Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')).forEach(f => photos.push({ url: URL.createObjectURL(f) }));
     if (selPhoto === -1 && photos.length) selPhoto = 0;
     rebuildGrid(); liveUpdate();
   });
@@ -634,51 +708,51 @@
     g.innerHTML = '';
     const no = document.createElement('div');
     no.className = 'no-photo-btn' + (selPhoto === -1 ? ' active' : '');
-    no.innerHTML = '<span style="font-size:1.1rem">🚫</span><span>Sans photo</span>';
-    no.onclick = selectNoPhoto; g.appendChild(no);
+    no.innerHTML = '<span style="font-size:1.2rem">🚫</span><span>Sans photo</span>';
+    no.onclick = selectNoPhoto;
+    g.appendChild(no);
     photos.forEach((p, i) => {
       const w = document.createElement('div');
       w.className = 'photo-thumb-wrap' + (selPhoto === i ? ' active' : '');
       w.onclick = () => { selPhoto = i; rebuildGrid(); liveUpdate(); };
       const img = document.createElement('img'); img.src = p.url;
-      const del = document.createElement('button'); del.className = 'del-btn'; del.textContent = '✕';
-      del.onclick = e2 => { e2.stopPropagation(); photos.splice(i,1); if(selPhoto>=photos.length)selPhoto=photos.length-1; rebuildGrid(); liveUpdate(); };
+      const del = document.createElement('button');
+      del.className = 'del-btn'; del.textContent = '✕';
+      del.onclick = ev => { ev.stopPropagation(); photos.splice(i,1); if(selPhoto>=photos.length) selPhoto=photos.length-1; rebuildGrid(); liveUpdate(); };
       w.appendChild(img); w.appendChild(del); g.appendChild(w);
     });
   }
   function selectNoPhoto() { selPhoto = -1; rebuildGrid(); liveUpdate(); }
 
-  // ── OVERLAY ──
+  // ═══ OVERLAY ═══
   function setOvColor(el) {
-    document.querySelectorAll('.ov-swatch').forEach(e => e.classList.remove('active'));
-    el.classList.add('active'); ovColor = el.dataset.color; liveUpdate();
+    document.querySelectorAll('.swatch').forEach(e => e.classList.remove('active'));
+    el.classList.add('active'); ovColor = el.dataset.c; liveUpdate();
   }
   function setOvColorCustom(inp) {
-    document.querySelectorAll('.ov-swatch').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.swatch').forEach(e => e.classList.remove('active'));
     ovColor = inp.value; liveUpdate();
   }
 
-  // ── POSITIONS ──
+  // ═══ POSITIONS ═══
   function setBgPos(el) {
-    document.querySelectorAll('#bg-pos-grid .pos-btn').forEach(e => e.classList.remove('active'));
-    el.classList.add('active'); bgPos = el.dataset.p; liveUpdate();
+    document.querySelectorAll('#bg-pos-grid .grid-btn').forEach(e => e.classList.remove('active-accent3'));
+    el.classList.add('active-accent3'); bgPos = el.dataset.p; liveUpdate();
   }
   function setTxtPos(el) {
-    document.querySelectorAll('#txt-pos-grid .pos-btn').forEach(e => e.classList.remove('active'));
-    el.classList.add('active'); txtJC = el.dataset.jc; txtTA = el.dataset.ta; liveUpdate();
+    document.querySelectorAll('#txt-pos-grid .grid-btn').forEach(e => e.classList.remove('active-accent3'));
+    el.classList.add('active-accent3'); txtJC = el.dataset.jc; txtTA = el.dataset.ta; liveUpdate();
   }
   function setSize(el) {
-    document.querySelectorAll('.layout-btn').forEach(e => e.classList.remove('active'));
-    el.classList.add('active'); currentW = +el.dataset.w; currentH = +el.dataset.h; liveUpdate();
+    el.closest('.grid-3, .grid-2').querySelectorAll('.grid-btn').forEach(e => e.classList.remove('active-accent'));
+    el.classList.add('active-accent'); currentW = +el.dataset.w; currentH = +el.dataset.h; liveUpdate();
   }
-  document.querySelectorAll('.design-thumb').forEach(el => {
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.design-thumb').forEach(e => e.classList.remove('active'));
-      el.classList.add('active'); currentDesign = el.dataset.d; liveUpdate();
-    });
-  });
+  function setDesign(el) {
+    el.closest('.grid-3').querySelectorAll('.grid-btn').forEach(e => e.classList.remove('active-accent2'));
+    el.classList.add('active-accent2'); currentDesign = el.dataset.d; liveUpdate();
+  }
 
-  // ── PARSE ──
+  // ═══ PARSE ═══
   function parseText(raw) {
     const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length);
     const result = []; let cur = null;
@@ -692,23 +766,28 @@
       } else if (cur) {
         cur.body += (cur.body?'\n':'') + line;
       } else {
-        result.push({ type:'header', text:line });
+        result.push({ type:'header', text: line });
       }
     }
     if (cur) result.push(cur);
     return result;
   }
 
-  // ── GENERATE ──
+  // ═══ GENERATE ═══
   function generateSlides() {
     const raw = document.getElementById('input-text').value.trim();
     if (!raw) { alert('Colle ton texte d\'abord !'); return; }
     slides = parseText(raw); currentIndex = 0;
     buildThumbs(); renderSlide(0); updateNav();
+    // Auto-navigate to preview on mobile
+    if (window.innerWidth < 768) {
+      const previewBtn = document.querySelector('[onclick*="preview"]');
+      if (previewBtn) previewBtn.click();
+    }
   }
   function liveUpdate() { if (slides.length) { buildThumbs(); renderSlide(currentIndex); } }
 
-  // ── PARAMS ──
+  // ═══ PARAMS ═══
   function getP() {
     return {
       bg: document.getElementById('bg-color').value,
@@ -722,13 +801,13 @@
     };
   }
 
-  // ── BUILD SLIDE ELEMENT ──
+  // ═══ BUILD SLIDE ═══
   function buildSlide(s, p, w, h, sc) {
     const f = n => n * sc;
+    const hasBg = selPhoto >= 0 && photos[selPhoto];
     const r = parseInt(ovColor.slice(1,3),16);
     const g2 = parseInt(ovColor.slice(3,5),16);
-    const b = parseInt(ovColor.slice(5,7),16);
-    const hasBg = selPhoto >= 0 && photos[selPhoto];
+    const b2 = parseInt(ovColor.slice(5,7),16);
 
     const slide = document.createElement('div');
     slide.style.cssText = `
@@ -742,7 +821,6 @@
       box-sizing:border-box;padding:${f(52)}px;
     `;
 
-    // BG photo
     if (hasBg) {
       const bgEl = document.createElement('div');
       bgEl.style.cssText = `
@@ -754,19 +832,15 @@
       slide.appendChild(bgEl);
     }
 
-    // Overlay
     const ovEl = document.createElement('div');
-    ovEl.style.cssText = `position:absolute;inset:0;background:rgba(${r},${g2},${b},${hasBg?p.ovOp:0});`;
+    ovEl.style.cssText = `position:absolute;inset:0;background:rgba(${r},${g2},${b2},${hasBg?p.ovOp:0});`;
     slide.appendChild(ovEl);
 
-    // Decorations
     addDecorations(slide, currentDesign, w, h, sc);
 
-    // Text wrap
     const tw = document.createElement('div');
     tw.style.cssText = `
-      position:relative;z-index:3;
-      max-width:${w*0.88}px;
+      position:relative;z-index:3;max-width:${w*0.88}px;
       ${p.textBg?`background:rgba(0,0,0,0.42);border-radius:${f(12)}px;padding:${f(16)}px ${f(22)}px;`:''}
     `;
     const shd = p.shadow ? '0 2px 14px rgba(0,0,0,0.95),0 0 28px rgba(0,0,0,0.7)' : 'none';
@@ -805,59 +879,28 @@
 
   function addDecorations(slide, d, w, h, sc) {
     const f = n => Math.round(n*sc);
-    if (d === 'frame') {
-      const el = document.createElement('div');
-      el.style.cssText = `position:absolute;inset:${f(18)}px;border:${f(3)}px solid rgba(255,255,255,0.22);border-radius:${f(8)}px;z-index:2;pointer-events:none;`;
-      slide.appendChild(el);
-    }
-    if (d === 'floral') {
-      [[`top:-${f(70)}px;right:-${f(70)}px;width:${f(190)}px;height:${f(190)}px;`,0.07],[`bottom:-${f(50)}px;left:-${f(50)}px;width:${f(130)}px;height:${f(130)}px;`,0.05]].forEach(([css,op]) => {
-        const c = document.createElement('div');
-        c.style.cssText = `position:absolute;border-radius:50%;background:rgba(255,255,255,${op});z-index:2;pointer-events:none;${css}`;
-        slide.appendChild(c);
-      });
-    }
-    if (d === 'circle') {
-      const sz = Math.min(w,h)*0.68;
-      const c = document.createElement('div');
-      c.style.cssText = `position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;border:${f(3)}px solid rgba(255,255,255,0.2);top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;`;
-      slide.appendChild(c);
-    }
-    if (d === 'dots') {
-      const el = document.createElement('div');
-      el.style.cssText = `position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.12) 1.5px,transparent 1.5px);background-size:${f(22)}px ${f(22)}px;z-index:2;pointer-events:none;`;
-      slide.appendChild(el);
-    }
-    if (d === 'lines') {
-      const el = document.createElement('div');
-      el.style.cssText = `position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,rgba(255,255,255,0.05) 0,rgba(255,255,255,0.05) 1px,transparent 1px,transparent ${f(18)}px);z-index:2;pointer-events:none;`;
-      slide.appendChild(el);
-    }
-    if (d === 'diagonal') {
-      const el = document.createElement('div');
-      el.style.cssText = `position:absolute;top:0;left:0;right:0;height:${h*0.36}px;background:rgba(0,0,0,0.22);clip-path:polygon(0 0,100% 0,100% 52%,0 100%);z-index:2;pointer-events:none;`;
-      slide.appendChild(el);
-    }
-    if (d === 'split') {
-      const el = document.createElement('div');
-      el.style.cssText = `position:absolute;top:0;left:0;width:${w*0.48}px;height:100%;background:rgba(0,0,0,0.28);z-index:2;pointer-events:none;`;
-      slide.appendChild(el);
-    }
+    if (d==='frame') { const el=document.createElement('div'); el.style.cssText=`position:absolute;inset:${f(18)}px;border:${f(3)}px solid rgba(255,255,255,0.22);border-radius:${f(8)}px;z-index:2;pointer-events:none;`; slide.appendChild(el); }
+    if (d==='floral') { [[`top:-${f(70)}px;right:-${f(70)}px;width:${f(190)}px;height:${f(190)}px`,0.07],[`bottom:-${f(50)}px;left:-${f(50)}px;width:${f(130)}px;height:${f(130)}px`,0.05]].forEach(([css,op])=>{ const c=document.createElement('div'); c.style.cssText=`position:absolute;border-radius:50%;background:rgba(255,255,255,${op});z-index:2;pointer-events:none;${css};`; slide.appendChild(c); }); }
+    if (d==='circle') { const sz=Math.min(w,h)*0.68; const c=document.createElement('div'); c.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;border:${f(3)}px solid rgba(255,255,255,0.2);top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;`; slide.appendChild(c); }
+    if (d==='dots') { const el=document.createElement('div'); el.style.cssText=`position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.12) 1.5px,transparent 1.5px);background-size:${f(22)}px ${f(22)}px;z-index:2;pointer-events:none;`; slide.appendChild(el); }
+    if (d==='lines') { const el=document.createElement('div'); el.style.cssText=`position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,rgba(255,255,255,0.05) 0,rgba(255,255,255,0.05) 1px,transparent 1px,transparent ${f(18)}px);z-index:2;pointer-events:none;`; slide.appendChild(el); }
+    if (d==='diagonal') { const el=document.createElement('div'); el.style.cssText=`position:absolute;top:0;left:0;right:0;height:${h*0.36}px;background:rgba(0,0,0,0.22);clip-path:polygon(0 0,100% 0,100% 52%,0 100%);z-index:2;pointer-events:none;`; slide.appendChild(el); }
+    if (d==='split') { const el=document.createElement('div'); el.style.cssText=`position:absolute;top:0;left:0;width:${w*0.48}px;height:100%;background:rgba(0,0,0,0.28);z-index:2;pointer-events:none;`; slide.appendChild(el); }
   }
 
-  // ── RENDER ──
+  // ═══ RENDER ═══
   function renderSlide(idx) {
     if (!slides.length) return;
     const p = getP();
-    const maxW = (window.innerWidth - 370) * 0.88 - 48;
-    const maxH = window.innerHeight - 200;
-    const sc = Math.min(maxW / currentW, maxH / currentH, 0.52);
+    const area = document.getElementById('preview-area');
+    const maxW = area.clientWidth - 32;
+    const maxH = area.clientHeight - 32;
+    const sc = Math.min(maxW / currentW, maxH / currentH, 0.6);
     const w = Math.round(currentW * sc), h = Math.round(currentH * sc);
 
     document.getElementById('slide-counter').textContent = `${idx+1} / ${slides.length}`;
     document.querySelectorAll('.thumb-item').forEach((el,i) => el.classList.toggle('active', i===idx));
 
-    const area = document.getElementById('preview-area');
     area.innerHTML = '';
     const wrap = document.createElement('div');
     wrap.id = 'slide-container';
@@ -871,7 +914,7 @@
     strip.innerHTML = '';
     slides.forEach((s, i) => {
       const el = document.createElement('div');
-      el.className = 'thumb-item' + (i === currentIndex ? ' active' : '');
+      el.className = 'thumb-item' + (i===currentIndex?' active':'');
       el.style.backgroundColor = document.getElementById('bg-color').value;
       if (selPhoto >= 0 && photos[selPhoto]) {
         el.style.backgroundImage = `url('${photos[selPhoto].url}')`;
@@ -880,9 +923,9 @@
       }
       const lbl = document.createElement('span');
       lbl.className = 'thumb-label';
-      lbl.textContent = s.type === 'conseil' ? s.number+'.' : '✦';
+      lbl.textContent = s.type==='conseil' ? s.number+'.' : '✦';
       el.appendChild(lbl);
-      el.onclick = () => { currentIndex = i; renderSlide(i); updateNav(); };
+      el.onclick = () => { currentIndex=i; renderSlide(i); updateNav(); };
       strip.appendChild(el);
     });
   }
@@ -892,11 +935,11 @@
     renderSlide(currentIndex); updateNav();
   }
   function updateNav() {
-    document.getElementById('btn-prev').disabled = currentIndex === 0;
-    document.getElementById('btn-next').disabled = currentIndex === slides.length-1;
+    document.getElementById('btn-prev').disabled = currentIndex===0;
+    document.getElementById('btn-next').disabled = currentIndex===slides.length-1;
   }
 
-  // ── EXPORT ──
+  // ═══ EXPORT ═══
   async function exportSlide(idx) {
     const p = getP();
     const off = document.createElement('div');
@@ -905,12 +948,12 @@
     document.body.appendChild(off);
     await new Promise(r => setTimeout(r, 300));
     const canvas = await html2canvas(off.firstChild, {
-      width: currentW, height: currentH, scale: 2,
-      backgroundColor: null, useCORS: true, allowTaint: true, logging: false
+      width:currentW, height:currentH, scale:2,
+      backgroundColor:null, useCORS:true, allowTaint:true, logging:false
     });
     document.body.removeChild(off);
     const s = slides[idx];
-    const name = s.type==='conseil' ? `slide-${s.number}-${(s.title||'').substring(0,18).replace(/\s+/g,'-').replace(/[^\w-]/g,'')}` : `slide-${idx+1}`;
+    const name = s.type==='conseil' ? `slide-${s.number}` : `slide-${idx+1}`;
     const a = document.createElement('a');
     a.download = `cassourel-${name}.png`;
     a.href = canvas.toDataURL('image/png');
@@ -919,13 +962,16 @@
 
   async function downloadCurrent() { await exportSlide(currentIndex); }
   async function downloadAll() {
-    for (let i = 0; i < slides.length; i++) {
-      currentIndex = i; renderSlide(i);
+    for (let i=0; i<slides.length; i++) {
+      currentIndex=i; renderSlide(i);
       await new Promise(r => setTimeout(r, 80));
       await exportSlide(i);
       await new Promise(r => setTimeout(r, 120));
     }
   }
+
+  // Resize handler
+  window.addEventListener('resize', () => { if (slides.length) renderSlide(currentIndex); });
 </script>
 </body>
 </html>
